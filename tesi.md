@@ -7,6 +7,7 @@
  2.1 [IBM Granite - General Overview](#ibm-granite---general-overview)  
   2.1.1 [Granite TinyTimeMixers](#granite-tinytimemixers)  
   2.1.2 [Granite TSPulse](#granite-tspulse)  
+  2.1.3 [Grasnite PatchTST](#grasnite-patchtst)  
   2.1.4 [Granite PatchTSMixer](#granite-patchtsmixer)  
   2.1.5 [Granite FlowState](#granite-flowstate)  
   2.1.6 [Granite Geospatial Biomass](#granite-geospatial-biomass)  
@@ -19,10 +20,9 @@
  2.8 [Fine-Grained Visual Classification on Plant Leaf Diseases](#fine-grained-visual-classification-on-plant-leaf-diseases)  
  2.9 [Timeseries Anomaly Detection](#timeseries-anomaly-detection)  
 3. [Non-relevant Models](#non-relevant-models)  
- 3.1 [Grasnite PatchTST](#grasnite-patchtst)  
- 3.2 [OpenMed NER](#openmed-ner)  
- 3.3 [PlanTL models](#plantl-models)  
- 3.5 [Others](#others)  
+ 3.1 [OpenMed NER](#openmed-ner)  
+ 3.2 [PlanTL models](#plantl-models)  
+ 3.3 [Others](#others)  
 4. [References](#references)
 
 # 1. Introduction
@@ -47,7 +47,7 @@ The models that satisfy both requirements, labeled as "accepted", will be analys
 # 2. Relevant Models
 
 This chapter will analyse all the models deemed relevant to the FARM-TECH project. Most of these models are general-purpose, time-series forecasting models which, while not trained specifically on relevant data, can be re-trained to better fit the intended purposes.
-Out of 100 models originally retrieved, 16 of them are considered as relevant for [this work?]; of these accepted models, 7 are part of the IBM Granite suite.
+Out of 100 models originally retrieved, 16 of them are considered as relevant for [this work?]; of these, 7 are part of the IBM Granite suite.
 
 ## 2.1 IBM Granite - General Overview
 
@@ -65,7 +65,7 @@ Granite TTMs are available in two main revisions, named as r1 and r2. While arch
 Granite TinyTimeMixers provide a valid solution for time-series forecasting in smart farming, and the vast documentation provided by IBM would greatly simplify and speed up the process of introducing these models in a live application.
 
 ### 2.1.2 Granite TSPulse
-Also part of the IBM Granite suite are the TSPulse models, ultra-compact pre-trained models developed for tasks such as classification, anomaly detection (AD), imputation, and similarity search. Their main strength comes from their very limited size, totaling at 1 milion parameters, compared to other multivariate time-series analysis models such as Google's TimesFM (200M parameters) [], Amazon's Chronos models (20M for the smallest) [] and even Lag-LLaMA (2.49M) [], allowing these models to perform GPU-free inference.
+Also part of the IBM Granite suite are the TSPulse models, ultra-compact pre-trained models developed for tasks such as classification, anomaly detection (AD), imputation, and similarity search in multivariate time-series. Their main strength comes from their very limited size, totaling at 1 milion parameters, compared to other multivariate time-series analysis models such as Google's TimesFM (200M parameters) [], Amazon's Chronos models (20M for the smallest) [] and even Lag-LLaMA (2.49M) [], allowing these models to perform GPU-free inference.
 
 [TODO overview dell'architettura]  
 At the task level, TSPulse integrates several innovations:
@@ -85,7 +85,48 @@ The terms "hybrid" and "block" represent the type of masking used during pre-tra
 
 In conclusion, thanks to their compact architecture and strong benchmark performance, TSPulse models represent a valid choice for anomaly detection tasks in smart farming. Their small parameter count enables efficient, resource-light deployment, while mantaining a high degree of efficency compared to state-of-the-art models.
 
+## 2.1.3 Grasnite PatchTST
+Like TTMs, PatchTST [] is a transformer-based model for tasks related to multivariate time-series, such as forecasting, regression and classification.  
+PatchTST introduces two key concepts:
+* Patching, which consists in aggregating several time steps into subseries-level short contiguous segments called patching.
+* Channel-independence: a multivariate time series is a multi-channel signal, which can be aggregated into a single data point to serve as input token for the Transformer; channel-independence, instead, means that each input token contains information from a single channel.
+
+The purpose of these two ideas are mainly three: (i) a reduction on time and space complexity, since patching will reduce the amount of input tokens fed to the Transformer, this will be seen more in detail later; (ii) increased locality and capture of comprehensive semantic information that would be missed in point-level evaluation, and (iii) the separate per-channel attention would increase adaptability across heterogeneous series, reducing overfitting while still allowing cross-series weight sharing for transferability.
+
+Below is an image of the model's architecture.
+
+![PatchTST Architecture](./img/patchtst_architecture.png)
+
+Where $x$ is the matrix containing data of all $M$ channels, with lookback window of length $L$.  
+The first step is applying the channel-independence on $x$, breaking it down in $M$ vectors $x^(i)$, where $i=1, ..., M$. At this point, for each $i$ the Transformer backbone will produce a forecast of *T* future values, that is to say $\hat{x}^{(i)}=(\hat{x}^{(i)}_{L+1},...\hat{x}^{(i)}_{L+T})$.  
+
+(b) shows in detail the transformer's behaviour: each $x^{(i)}$ is divided into patches, which can be either overlapped or not. Given $P$ as patch length and $S$ as stride (that is, the non-overlapping region between two consecutive patches), the patching process will generate a sequence of $x_p^{(i)}\in\reals^{P\times N}$ patches, where $N=\lfloor\frac{L-P}{S}\rfloor+2$ is the amount of patches.  
+
+This is significant, as through the patching process we reduce the amount of input tokens to the transformer, from $L$ to $N\approx L/S$: since the vanilla transformer's complexity is $O(N^2)$, the memory usage and computational complexity of the attention map are quadratically reduced by a factor of $S$.
+
+The model, trained on a dataset containing several parameters sampled from an electrical transformer every hour over the span of two years, achieved a training loss of 0.3 and validation loss of 0.81, while a mean square error of 0.39 on the evaluation dataset. Training hyperparameters can be found on the model's page.
+
+While the model has been trained on non-relevant data, IBM offers a demo for training a model on a custom dataset.
+
+\[conclusion TODO\]
+
 ### 2.1.4 Granite PatchTSMixer
+
+PatchTSMixer is yet another model designed for multivariate time-series analysis. As the name suggests, this model stil makes use of the patching process introduced with PatchTST, while it's main feature is the swap of the Transformer backbone with an MLP modules, allowing it to be much lighter than it's Transformer-based counterpart: through empirical testing on 7 different datasets, IBM has found that, while TSMixer ouperforms PatchTST by just 1-2%, it shows a reduction in training time and memory usage by a factor of 2-3X.
+
+Below is an overview of the architecture.
+
+![TSMixer architecture](./img/tstmixer_arch.png)  
+
+Where $X_{c\times L}$ is a multivariate time series of length $L$ and $c$ channels, $sl \le L$ the input sequence length, $fl$ the forecast length, $b$ the batch size, $n$ and $pl$ respectively the number of parches and a patch's length, and $\Mu$ the DNN model; the forecasting task is defined as predicting the future values:
+$$\hat{Y}_{fl\times c}=\Mu(X_{sl\times c})$$
+The actual future values are named as $Y_{fl\times c}$.  
+Training can be performed in two ways: supervised (following "prediction" worflow) and self-supervised ("pretrain" workflow).
+* supervised training: the input sequence is normalised, patched and processed through a permutation process. Then, the result enters the TSMixer backbone, responsible for the training process. The backbone's output embedding is then converted into the base forecast $\hat{Y}$ by the prediction head; at this point, the model is trained to minimise the loss between $\hat{Y}$ and $Y$. The extra online forecast reconciliation heads, if activated, can tune the base forecasts and produce more accurate forecasts by leveraging cross-channel and patch-aggregation
+information. For more details on their functioning, refer to IBM's original paper.
+* self-supervised training: while the normalisation and patching processes are nearly identical, a masking process randomly masks a fraction of the input patches. The model is then trained to recover these missing patches. Afterwards, the pretrained model is finetuned through the "prediction" workflow.
+
+The patching process is identical to PatchTST, although the self-supervised training, in contrast to supervised, needs patches to be strictly non-overlapping.
 
 ### 2.1.5 Granite FlowState
 
@@ -118,30 +159,7 @@ DNA modeling of plants
 
 A significant amount of the retrieved models have been deemed non-releveant to the projects' objective, these will be listed in this chapter alongside their reason of exclosure.
 
-## 3.1 Grasnite PatchTST
-Like TTMs, Patch Time Series Transformer (PatchTST) [] is a transformer-based model for tasks related to multivariate time-series, such as forecasting, regression and classification.  
-PatchTST introduces two key concepts:
-* Patching, which consists in aggregating several time steps into subseries-level short contiguous segments called patching.
-* Channel-independence: a multivariate time series is a multi-channel signal, which can be aggregated into a single data point to serve as input token for the Transformer; channel-independence, instead, means that each input token contains information from a single channel.
-
-The purpose of these two ideas are mainly three: (i) a reduction on time and space complexity, since patching will reduce the amount of input tokens fed to the Transformer, this will be seen more in detail later; (ii) increased locality and capture of comprehensive semantic information that would be missed in point-level evaluation, and (iii) the separate per-channel attention would increase adaptability across heterogeneous series, reducing overfitting while still allowing cross-series weight sharing for transferability.
-
-Below is an image of the model's architecture.
-
-![PatchTST Architecture](./img/patchtst_architecture.png)
-
-Where $x$ is the matrix containing data of all $M$ channels, with lookback window of length $L$.  
-The first step is applying the channel-independence on $x$, breaking it down in $M$ vectors $x^(i)$, where $i=1, ..., M$. At this point, for each $i$ the Transformer backbone will produce a forecast of *T* future values, that is to say $\hat{x}^{(i)}=(\hat{x}^{(i)}_{L+1},...\hat{x}^{(i)}_{L+T})$.  
-
-(b) shows in detail the transformer's behaviour: each $x^{(i)}$ is divided into patches, which can be either overlapped or not. Given $P$ as patch length and $S$ as stride (that is, the non-overlapping region between two consecutive patches), the patching process will generate a sequence of $x_p^{(i)}\in\reals^{P\times N}$ patches, where $N=\lfloor\frac{L-P}{S}\rfloor+2$ is the amount of patches.  
-
-This is significant, as through the patching process we reduce the amount of input tokens to the transformer, from $L$ to $N\approx L/S$: since the vanilla transformer's complexity is $O(N^2)$, the memory usage and computational complexity of the attention map are quadratically reduced by a factor of $S$.
-
-The model, trained on a dataset containing several parameters sampled from an electrical transformer every hour over the span of two years, achieved a training loss of 0.3 and validation loss of 0.81, while a mean square error of 0.39 on the evaluation dataset. Training hyperparameters can be found on the model's page.
-
-IL MODELLO E' ADDESTRATO SU TRASFORMATORI ELETTRICI, NON LO POSSO USARE
-
-## 3.2  OpenMed NER
+## 3.1  OpenMed NER
 OpenMed Named-entity recognition (NER) [] is a suite of open-source transformer models, developed by OpenMed for the purpose of identifying biomedical entities contained in clinical texts, research papers and other healthcare-related documents.  
 The various models have been trained on the same dataset [che non so se è https://huggingface.co/datasets/spyysalo/species_800 o https://www.kaggle.com/datasets/histonevon/species-800 perchè non mi hanno messo un link], but all differ in size (~60M to ~570M parameters) and underlying architecture: in their paper, it is stated that the main architectures used during the training process were DeBERTa-v3-large, PubMedBERT-large and BioELECTRA-large, all models based on Google's BERT.
 
@@ -149,7 +167,7 @@ Of all non-relevant models, 29 of them were part of the OpenMed NER suite; they 
 
 Being a collection of healthcare-related models, they have been deemed not relevant to FARM-TECH.
 
-## 3.3 PlanTL models
+## 3.2 PlanTL models
 Plan de Tecnologías del Lenguaje (PlanTL) is a government-owned Spanish company which has developed several models with different intended purposes, all unrelated to FARM-TECH: 8 of their models have been retrieved since their hugging-face page contains the abbreviation "PlanTL", where "Plant" was one of the searched terms.
 * Anominization Core LG, whose purpose is to detect personal information contained in plain-text documents written in Spanish and Catalan. It is developed to work in conjunction with the Anonymization Pipeline [], which will either remove or randomise the detected infromation from the documents.
 *  Biomedical-clinical language model for Spanish, these are a group of models trained with the purpose of performing fill-mask tasks on medical documents written in Spanish. They differ in their underlying architectures; they will not be described in more detail as they are not relevant to this work.
@@ -159,9 +177,9 @@ Plan de Tecnologías del Lenguaje (PlanTL) is a government-owned Spanish company
 All of these model has been deemed not relevant since their intended purposes are outside of FARM-TECH's scope.
 
 
-## 3.4 
+## 3.3 
 
-## 3.5 Others
+## 3.4 Others
 
 All the remaining models have been discarded for providing little to no documentation:
 * muhammad-atif-ali/fine_tuned_vit_plant_disease

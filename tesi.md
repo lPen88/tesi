@@ -118,8 +118,9 @@ Below is an overview of the architecture.
 
 ![TSMixer architecture](./img/tstmixer_arch.png)  
 
-Where $X_{c\times L}$ is a multivariate time series of length $L$ and $c$ channels, $sl \le L$ the input sequence length, $fl$ the forecast length, $b$ the batch size, $n$ and $pl$ respectively the number of parches and a patch's length, and $\Mu$ the DNN model; the forecasting task is defined as predicting the future values:
+Where $X_{c\times L}$ is a multivariate time series of length $L$ and $c$ channels, $sl \le L$ the input sequence length, $fl$ the forecast length, $b$ the batch size, $n$ and $pl$ respectively the number of parches and a patch's length, and $\Mu$ the DNN model; the forecasting task is defined as predicting the future values:  
 $$\hat{Y}_{fl\times c}=\Mu(X_{sl\times c})$$
+
 The actual future values are named as $Y_{fl\times c}$.  
 Training can be performed in two ways: supervised (following "prediction" worflow) and self-supervised ("pretrain" workflow).
 * supervised training: the input sequence is normalised, patched and processed through a permutation process. Then, the result enters the TSMixer backbone, responsible for the training process. The backbone's output embedding is then converted into the base forecast $\hat{Y}$ by the prediction head; at this point, the model is trained to minimise the loss between $\hat{Y}$ and $Y$. The extra online forecast reconciliation heads, if activated, can tune the base forecasts and produce more accurate forecasts by leveraging cross-channel and patch-aggregation
@@ -127,6 +128,10 @@ information. For more details on their functioning, refer to IBM's original pape
 * self-supervised training: while the normalisation and patching processes are nearly identical, a masking process randomly masks a fraction of the input patches. The model is then trained to recover these missing patches. Afterwards, the pretrained model is finetuned through the "prediction" workflow.
 
 The patching process is identical to PatchTST, although the self-supervised training, in contrast to supervised, needs patches to be strictly non-overlapping.
+
+The TSMixer backbone will take in the several patches and produce an output embedding, which will then be used by either the prediction or pretrain head to forecast the future values (or missing patches); it's inner working will not be discussed in this work, please refer to IBM's paper for more information.
+
+\[conclusion TODO\]
 
 ### 2.1.5 Granite FlowState
 
@@ -143,9 +148,15 @@ This model [] has been developed for the intended purpose of detecting diseases 
 ## 2.3 PlantCaduceus
 DNA modeling of plants
 
-## 2.4 Fruits and Vegetables Detector
+## 2.4 Fruits and Vegetables Detector 36
+
+This model is a fine-tuned version of ResNet-50, a neural network developed by Microsoft for the purpose of image classification.
+
+The model was trained on a classified dataset containing 3825 images of 36 different fruits; testing on the evaluation set found it achieves a precision of 0.97.
 
 ## 2.5 Plant leaf Detection and Classification
+
+This model has been trained using YOLOv8 to detect and classify plant leaves. Unfortunately, YOLOv8 offers no sort of documentation on it's inner workings so i don't know jack shit about it lol.
 
 ## 2.6 Plant Disease Detection Project
 

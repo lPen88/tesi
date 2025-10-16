@@ -135,6 +135,45 @@ The TSMixer backbone will take in the several patches and produce an output embe
 
 ### 2.1.5 Granite FlowState
 
+FlowState [] is a Time Series foundation model designed to perform zero-shot forecasting independently of the data's sampling rate. To achieve this, FlowState makes use of an encoder-decoder architecture, combining a state space model encoder with a functional basis decoder.  
+A state space model (SSM) [lookForSource?] is a kind of model trained to perform predictions on a system based on it's internal state evolution over time; in particular, FlowState utilises several state space layers, namely S5 layers [], which, thanks to their architecture, allow FlowState to perform sampling rate-independent forecasting.
+
+Below is an overview of the model's architecture.
+
+![flowState](./img/FlowState_arch.png)
+
+The model's inner workings are quite complex, in the following section a high-level overview will be presented; for more information, consult IBM's paper [].
+
+**a.** is a complete overview of the model's architecture: the input time series of length *L* is normalised and then fed to the embedding module; the embedding is then fed to the encoder without any patching, in contrast to previous models; the SSM encodes the data into a coefficient space, that is to say the input series is processed into coefficients of a continuous basis function, allowing the Functional Basis Decoder (FBD) to produce a continuous output function; lastly, the decoder's output is inverse-normalised, using the inverse process of the input normalisation; the result of this last process form the forecast of the model.  
+**b.** is a close-in of the SSM encoder: it is composed by a series of S5 layers, each consisting of an S5 block followed by an MLP; each S5 layer is connected by a skip connection to the later layers, and through the matrixes $\bar{A}^l$, $\bar{B}^l$, $\bar{C}^l$ and $\bar{D}^l$ (which represent, respectively, the state transition, input, output and skip connections); the final output of the SSM encoder is fed into the Functinal Basis Decoder.  
+**c.** the FBD will interpret the SSM's final output as coefficients of a functional basis, and will generate a continuous output function as forecast. The advantage of the ouput being continuous lays in the fact that we will be able to sample it with any desired sample rate. Again, for more information on how the FBD works, consult the original paper [].  
+
+Note that, in the image above, the value $s_\Delta$ is a parameter called scale factor, which is used both in the encoder and decoder to adjust for unseen sampling rates. On FlowState's model page, these values are suggested for common sampling rates:  
+
+| Sampling Rate | Recommended Scale Factor                     |
+|---------------|----------------------------------------------|
+| 15min         | 0.25                                         |
+| 30min         | 0.5                                          |
+| hourly        | 1.0                                          |
+| daily         | 3.43 if data has a weekly cycle, else 0.0656 |
+| weekly        | 0.46                                         |
+| monthly       | 2                                            |
+
+<br>
+IBM compared FlowState in zero-shot forecasting to several state-of-the-art models, such as NXAI's TiRex, Amazon's Chronos and Google's TimesFM, using the Gift-Eval benchmark []: two variants of different sizes (2.6M and 9.1M params) were trained on the benchmark data, and, as of July 31, 2025, both variants outperformed other state-of-the-art models at a fraction of their size. Below is an extract of the testing done by IBM, utilising MASE (mean absolute scaled error) as a metric:  
+
+| Model          | #Param | MASE  |
+|----------------|--------|-------|
+| FlowState-9.1M | 9.1M   | 0.728 |
+| TiRex          | 35M    | 0.733 |
+| FlowState-2.6M | 2.6M   | 0.733 |
+| TimesFM-2.0    | 500M   | 0.764 |
+| Chronos-bolt-b | 205M   | 0.832 |
+
+At the time of writing, the model published on Hugging Face has been trained on a subset of data from both Gift-Eval Pretrain [] and Chronus Pretraining Data Corpus; additionally, the current model does not support more than one input channel, rendering this model unable to perform forecasting on multivariate time series.
+
+[conclusion TODO]
+
 ### 2.1.6 Granite Geospatial Biomass
 This model has been developed for the purpose of predicting the total amount of biomass utilising satellite imagery.
 The model has been trained using Terratorch, a library intended for simplyfing fine-tuning, evaluation and deployment of Geospatial Foundation models.
@@ -156,7 +195,8 @@ The model was trained on a classified dataset containing 3825 images of 36 diffe
 
 ## 2.5 Plant leaf Detection and Classification
 
-This model has been trained using YOLOv8 to detect and classify plant leaves. Unfortunately, YOLOv8 offers no sort of documentation on it's inner workings so i don't know jack shit about it lol.
+This model has been trained using YOLOv8 to detect and classify plant leaves.  
+YOLOv8 is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification on images and video feeds.
 
 ## 2.6 Plant Disease Detection Project
 
@@ -239,3 +279,7 @@ ciel Zortea, Naomi Simumba, Paolo Fraccaro, Shraddha Singh, Steve Melik-
 setian, Campbell Watson, Daiki Kimura, and Harini Srinivasan. Fine-tuning
 of geospatial foundation models for aboveground biomass estimation, 2024.
 URL https://arxiv.org/abs/2406.19888
+
+[S5] Jimmy T. H. Smith, Andrew Warrington, and Scott W. Linderman.
+Simplified state space layers for sequence modeling, 2023. URL
+https://arxiv.org/abs/2208.04933

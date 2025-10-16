@@ -195,8 +195,9 @@ The model was trained on a classified dataset containing 3825 images of 36 diffe
 
 ## 2.5 Plant leaf Detection and Classification
 
-This model has been trained using YOLOv8 to detect and classify plant leaves.  
-YOLOv8 is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification on images and video feeds.
+This model [] has been trained using YOLOv8 to detect and classify plant leaves: YOLOv8 [] is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification on images and real-time video feeds.  
+
+While Ultralytics has provided no proper documentation on it's architecture nor inner workings, it has a vast amount of tutorials and guided examples on how to train a model using YOLOv8.
 
 ## 2.6 Plant Disease Detection Project
 

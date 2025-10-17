@@ -175,14 +175,53 @@ At the time of writing, the model published on Hugging Face has been trained on 
 [conclusion TODO]
 
 ### 2.1.6 Granite Geospatial Biomass
-This model has been developed for the purpose of predicting the total amount of biomass utilising satellite imagery.
-The model has been trained using Terratorch, a library intended for simplyfing fine-tuning, evaluation and deployment of Geospatial Foundation models.
+Granite Geospatial Biomass (GGB from now on) [] has been developed for the purpose of predicting the total amount of aboveground biomass utilising satellite imagery.
+The model has been trained using Terratorch [], a toolkit intended for simplyfing fine-tuning, evaluation and deployment of Geospatial Foundation models; TerraTorch's architecture will not be discussed in this work, please refer to their paper for more information.
+
+GGB was fine-tuned from a model similar to the one described in [], which will not be discussed in detail in this work; GGB switches the Vision Transformer (ViT) for the Swin-B Transformer backbone as an encoder, as it enables the model to process at higher effective resolution while also improving computational efficiency thanks to the use of windowed self-attention [].  
+
+Pretraining was performed using SimSIM [], a self-supervised learning strategy based on masking a part of the input data which will then be reconstructed by the model.  
+Two datasets were used for the training process, Harmonized Landsat-Sentinel 2 (HLS) and Global Ecosystem Dynamics Investigation (GEDI), both provided by NASA. Both training and testing require a cloud-free snapshot of an area: [idk what to write lol]
+
+[conclusion TODO]
 
 
 ## 2.2 Smart Farming Disease Detection Transformer
 https://huggingface.co/wambugu71/crop_leaf_diseases_vit
 
-This model [] has been developed for the intended purpose of detecting diseases in crops based on a picture. poggers
+This model [] has been developed to detect diseases in crops based on a picture. It is a Vision Transformer model, finetuned from "vit-tiny-patch16-224"; it should be noted that this is a \[reapload?\] from the timm repository [], which contains a large amount of models and utilities for image processing.
+
+While the exact dataset has not been shared, the model's page describes it as a "diverse dataset of plant images, including different disease categories affecting crops such as corn, potato, rice, and wheat [...] includes images captured under various lighting conditions, from both controlled and uncontrolled environments and angles"; the amount of pictures is not shared, but a table of all the classes present in the dataset is:
+
+| Crop   | Class          |
+|--------|----------------|
+| Corn   | Common Rust    |
+|        | Gray Leaf Spot |
+|        | Healthy        |
+|        | Leaf Blight    |
+| Potato | Early Blight   |
+|        | Healthy        |
+|        | Late Blight    |
+| Rice   | Brown Spot     |
+|        | Healthy        |
+|        | Leaf Blast     |
+| Wheat  | Brown Rust     |
+|        | Healthy        |
+|        | Yellow Rust    |
+
+It should be noted that in the above table the class "rice_hispa" is not present, but is printed in the confusion matrix later in the model's page:
+
+![confMatrix](./img/disease_classification_metrics.png)
+
+While it's not clear if the confusion matrix above is the one being referenced, testing was performed on a validation set consisting of 20% of the original dataset; if the confusion matrix is the result of this testing, then the original dataset was composed of ≈23k images. Testing resulted in the following metrics:
+* Accuracy: 98%
+* Precision: 97%
+* Recall: 97%
+* F1 Score: 96%
+
+The author reports that the model may not generalise to unseen crops; as such, fine-tuning on relevant crops (that is, crops expected to be processed) is strongly suggested.
+
+[conclusion TODO]
 
 ## 2.3 PlantCaduceus
 DNA modeling of plants
@@ -284,3 +323,11 @@ URL https://arxiv.org/abs/2406.19888
 [S5] Jimmy T. H. Smith, Andrew Warrington, and Scott W. Linderman.
 Simplified state space layers for sequence modeling, 2023. URL
 https://arxiv.org/abs/2208.04933
+
+[Swin B] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin,
+and Baining Guo. Swin transformer: Hierarchical vision transformer using
+shifted windows, 2021. URL https://arxiv.org/abs/2103.14030
+
+[simMIM] Zhenda Xie, Zheng Zhang, Yue Cao, Yutong Lin, Jianmin Bao, Zhuliang Yao,
+Qi Dai, and Han Hu. Simmim: A simple framework for masked image mod-
+eling, 2022. URL https://arxiv.org/abs/2111.09886

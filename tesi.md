@@ -228,13 +228,18 @@ DNA modeling of plants
 
 ## 2.4 Fruits and Vegetables Detector 36
 
-This model is a fine-tuned version of ResNet-50, a neural network developed by Microsoft for the purpose of image classification.
+This model [] is a fine-tuned version of ResNet-50 [], a deep neural network developed by Microsoft for the purpose of image classification; 50 represents the depth of the network.
 
-The model was trained on a classified dataset containing 3825 images of 36 different fruits; testing on the evaluation set found it achieves a precision of 0.97.
+The main takeaway from ResNet is the use of Shortcut Connections, which allow the input of a layer to be passed directly to the next layer's input, effectively acting as an idntity mapping; in the paper, it is demonstrated that these shortcut connections allow a deep network to not degrade any worse than a shallower counterpart. More information can be found in the original paper [].
+
+Going back to Fruits and Vegetables detectors, it is not well documented:
+the model was trained on a dataset containing 3825 images of 36 different fruits,testing on the evaluation set found it achieves an accuracy of 0.97 and a loss of 0.0014; other than this, the training hyperparameters were provided, they can be found on the model's HuggingFace Repo.
+
+\[conclusion\] something something model may be shit but we may as well fine-tune ResNet for our purposes.
 
 ## 2.5 Plant leaf Detection and Classification
 
-This model [] has been trained using YOLOv8 to detect and classify plant leaves: YOLOv8 [] is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification on images and real-time video feeds.  
+This model [] has been trained using YOLOv8 to detect and classify plant leaves: YOLOv8 [] is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification of images and real-time video feeds.  
 
 While Ultralytics has provided no proper documentation on it's architecture nor inner workings, it has a vast amount of tutorials and guided examples on how to train a model using YOLOv8.
 

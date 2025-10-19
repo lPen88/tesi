@@ -189,7 +189,7 @@ Two datasets were used for the training process, Harmonized Landsat-Sentinel 2 (
 ## 2.2 Smart Farming Disease Detection Transformer
 https://huggingface.co/wambugu71/crop_leaf_diseases_vit
 
-This model [] has been developed to detect diseases in crops based on a picture. It is a Vision Transformer model, finetuned from "vit-tiny-patch16-224"; it should be noted that this is a \[reapload?\] from the timm repository [], which contains a large amount of models and utilities for image processing.
+This model [] has been developed to detect diseases in crops based on a picture. It is a Vision Transformer model, finetuned from google's "vit-tiny-patch16-224" []; it should be noted that the HuggingFace repo is a \[reapload?\] from the timm repository [], which contains a large amount of models and utilities for image processing.
 
 While the exact dataset has not been shared, the model's page describes it as a "diverse dataset of plant images, including different disease categories affecting crops such as corn, potato, rice, and wheat [...] includes images captured under various lighting conditions, from both controlled and uncontrolled environments and angles"; the amount of pictures is not shared, but a table of all the classes present in the dataset is:
 
@@ -241,11 +241,19 @@ the model was trained on a dataset containing 3825 images of 36 different fruits
 
 This model [] has been trained using YOLOv8 to detect and classify plant leaves: YOLOv8 [] is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification of images and real-time video feeds.  
 
-While Ultralytics has provided no proper documentation on it's architecture nor inner workings, it has a vast amount of tutorials and guided examples on how to train a model using YOLOv8.
+While Ultralytics has provided no proper documentation on YOLO architecture nor inner workings, it has uploaded a vast amount of tutorials and guided examples on how to train a model with it, which would speed up the process of building a system ourselves. This paper [] describes YOLOv8's architecture, although it is unclear if was written by an affiliate of Ultranalytics, or at least in cooperation with them.
+
+The model was trained by FOODU, an Indian company specialised in Web Designing. On the model's page, not much information about the training process is shared: the dataset utilised was not shared, it is stated that it's composed by "hundreds of images of 46 different plants, including both disease-infected and healthy leaves"; training was ran for 50 epochs, and, worringly, the terms "testing" nor "vealuation" never appeared on the page, but it is claimed that "The model has achieved a precision (mAP@0.5) of 0.946 on the object detection task".
+
+\[conclusion\] something something the model page is smelly, wouldn't trust it
 
 ## 2.6 Plant Disease Detection Project
 
+this model doesnt actually detect plant diseases.
+
 ## 2.7 Plant Leaf Diseases Detection
+
+analyses plants and leaves and tells you if there are any disease. It is done through an LLM so you can outright describe it things and the lie-machine will answer
 
 ## 2.8  Fine-Grained Visual Classification on Plant Leaf Diseases
 

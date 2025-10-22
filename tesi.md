@@ -255,9 +255,8 @@ This model was trained for the purpose of evaluating the SelfSynthX framework []
 
 Below is an overview of the framework's architecture:
 ![img](./img/selfsynth.png)
-Given an image, $X$ represents it's true contents and $c$ it's class label, each $c$ is associated with a set of visual concepts $Z$, which can either be defined by domain experts or by an LLM; the base LMM we wish to fine-tune (LLaVa in the paper) will now be prompted to describe the image, generating a set of descriptions $D$; the model is then fine-tuned to maximise the mutual information between $X, D$ and $Z$, and to select a set of $Z^* \subseteq Z$ which maximises the relevance to $X$.
-
-\[^ NOT FINISHED\]
+Given an image, $X$ represents it's true contents and $c$ it's class label, each $c$ is associated with a set of visual concepts $Z$, which can either be defined by domain experts or by an LLM; the base LMM we wish to fine-tune (LLaVa in the paper) will now be prompted to describe the image, generating a set of descriptions $D$; the model is then tuned to maximise the mutual information between $X, D$ and $Z$, and to select a set of $Z^* \subseteq Z$ which maximises the relevance of $D$ to $X$ **[i think lmao]**. Once $Z^*$ is obtained, it's possible to generate an explainable answer for a classification on each image by prompting the base LMM, such as "What is this bird's species? Explain your reasoning."; the pairs image and query-answer are later used to fine-tune the LMM. The question reported above was asked to the evaluation model trained on a dataset of birds  
+After the above steps, the tuned model goes through the Rejection Sampling process: for each image and query, several candidate answers are generated, each is scored by how well it aligns with the image-specific $Z^*$; the highest scoring candidate is accepted for successive fine-tuning only if it also correctly predicts the image's class label.
 
 As we stated earlier, the model [] was trained to evaluate SelfSynthX: as such, it is a fine-tuned version of LLaVa trained on the Plant Diseases Dataset [https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset]; other than this model, others were trained on different datasets to evaluate the framework on different domains.
 

@@ -247,13 +247,19 @@ The model was trained by FOODU, an Indian company specialised in Web Designing. 
 
 \[conclusion\] something something the model page is smelly, wouldn't trust it
 
-## 2.6 Plant Disease Detection Project
-
-this model doesnt actually detect plant diseases.
-
 ## 2.7 Plant Leaf Diseases Detection
 
-analyses plants and leaves and tells you if there are any disease. It is done through an LLM so you can outright describe it things and the lie-machine will answer
+https://huggingface.co/YuchengShi/LLaVA-v1.5-7B-Plant-Leaf-Diseases-Detection
+
+This model was trained for the purpose of evaluating the SelfSynthX framework [], a framework developed to fine-tune large multimodal models (LMMs) to improve their ability of performing fine-grained visual reasoning and increase explanation quality. We will see a brief overview of SelfSynthX, for more information please consult the original paper [].  
+
+Below is an overview of the framework's architecture:
+![img](./img/selfsynth.png)
+Given an image, $X$ represents it's true contents and $c$ it's class label, each $c$ is associated with a set of visual concepts $Z$, which can either be defined by domain experts or by an LLM; the base LMM we wish to fine-tune (LLaVa in the paper) will now be prompted to describe the image, generating a set of descriptions $D$; the model is then fine-tuned to maximise the mutual information between $X, D$ and $Z$, and to select a set of $Z^* \subseteq Z$ which maximises the relevance to $X$.
+
+\[^ NOT FINISHED\]
+
+As we stated earlier, the model [] was trained to evaluate SelfSynthX: as such, it is a fine-tuned version of LLaVa trained on the Plant Diseases Dataset [https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset]; other than this model, others were trained on different datasets to evaluate the framework on different domains.
 
 ## 2.8  Fine-Grained Visual Classification on Plant Leaf Diseases
 
@@ -275,20 +281,19 @@ Being a collection of healthcare-related models, they have been deemed not relev
 Plan de Tecnologías del Lenguaje (PlanTL) is a government-owned Spanish company which has developed several models with different intended purposes, all unrelated to FARM-TECH: 8 of their models have been retrieved since their hugging-face page contains the abbreviation "PlanTL", where "Plant" was one of the searched terms.
 * Anominization Core LG, whose purpose is to detect personal information contained in plain-text documents written in Spanish and Catalan. It is developed to work in conjunction with the Anonymization Pipeline [], which will either remove or randomise the detected infromation from the documents.
 *  Biomedical-clinical language model for Spanish, these are a group of models trained with the purpose of performing fill-mask tasks on medical documents written in Spanish. They differ in their underlying architectures; they will not be described in more detail as they are not relevant to this work.
-*  RoBERTa base trained with Spanish Legal Domain Corpora, similar to the above model but the target documents are of legal documents.
+*  RoBERTa base trained with Spanish Legal Domain Corpora, similar to the above model but the target documents are of legal nature.
 * roberta-base-es-wikicat-es, is a model trained with the purpose of classifying documents written in Spanish.
 
 All of these model has been deemed not relevant since their intended purposes are outside of FARM-TECH's scope.
 
 
-## 3.3 
-
-## 3.4 Others
+## 3.3 Others
 
 All the remaining models have been discarded for providing little to no documentation:
 * muhammad-atif-ali/fine_tuned_vit_plant_disease
 * textattack/roberta-base-rotten-tomatoes
 * textattack/bert-base-uncased-rotten-tomatoes
+* Diginsa/Plant-Disease-Detection-Project
 * hyrinmansoor/text2frappe-s2-flan-field
 * KevinCha/dinov2-vit-large-remote-sensing
 * kuleshov-group/PlantCAD2-Large-l48-d1536

@@ -56,16 +56,35 @@ IBM Granite is a family of enterprise-grade AI foundation models developed by IB
 ### 2.1.1 Granite TinyTimeMixers
 Granite TinyTimeMixers (TTM) are lightweight, efficient time-series forecasting models within the IBM Granite suite. They are designed to handle large-scale, multivariate time-series data, making them suitable for applications such as sensor data analysis and predictive maintenance in smart farming.
 
-[TODO overview dell'architettura]  
-lightweight as in they have less than a bilion parameters
+TTM is based on the light-weight TSMixer architecture [https://arxiv.org/abs/2303.06053], which allows a rapid training and fine-tuning for TTM, thanks to the replacement of heavier self-attention blocks in Transformers with MLPMixer blocks. TSMixer will not be analysed any further in this work, please refer to the original paper for more information. TTM is pre-trained using multiple public datasets, totaling in around a billion of samples; on the model's HuggingFace repo, you can find the datasets used.  
+TSMixer is further enchanced in the TTM training process by adding the following features.
+* **Adaptive patching** (AP): given the different sampling rates and context lengths present in the various datasets, patching (that is, the process of grouping consecutive time steps into tokens) cannot be performed at a specific patch length; as such, the patching length and number patches changes depending on the backbones layer.
+* **Diverse resolution sampling** (DRS): high-resolution datasets (that is, datasets where sampling is performed very frequently) will account for a larger fraction of the total samples compared to lower-resolution ones, which can lead to a bias towards finer resolution data; the solution is to resample these datasets at lower resolutions, for example, by averaging $k$ samples into a single one, or outright retaining only the $k$-th sample; the following example is presented in the paper: "from a 4-second resolution dataset, we derive multiple datasets at minutely ($k$=15) and hourly resolutions ($k$=900) [...] increasing the number of datasets for each resolution which greatly improves the model performance".
+* **Resolution prefix tuning** (DRT): the purpose of this tecnique is to explicitly embed resolution information in the first patch, facilitating resolution-conditioned modeling while training on diverse datasets.
+* **multi-level modeling strategy**: TTMs are first pre-trained in a channel-independent way, and then fine-tuned with channel mixing to incorporate correlations across targets and exogenous channels in the target domain
+
+Below is an overview of TTM  
+![img](./img/ttm_overview.png)
+
+TTM operates in two stages, pre-training and fine-tuning: as you can see from the image, both workflows share the normalisation and patching blocks; each time series is normalised per instance to have zero mean and unit standard deviation, the reverse is done at the end of the workflows before computing loss; the data is then patched (this process is different from AP) into $n$ non-overlapping windows of length $pl$, which are then fed to the TTM Backbone.
+
+In the pretrain workflow, the backbone will perform the multi-resolution training utilizing the features mentioned earlier (AP, DRS and DRT) on a single channel of the timeseries; the output of the backbone will then be used by the decoder and forecast head to produce the forecast. The functioning of the Decoder and Forecast head will not be discussed in this work, please refer to the original paper for more information [].  
+
+In the fine-tuning workflow, the pre-trained model will be working with data from the target domain, which has no overlap with the pre-training datasets. Forecasting can be performed in three ways:
+* zero-shot: the pre-trained model is directly used to perform forecasting;
+* few-shot: a tiny portion (5-10%) of the training part of the target dataset is used to update the pre-trained weights in the TTM Head;
+* full-shot: the entire training part is used to update the pre-trained weights.
+
+While the backbone will still perform channel-independent computing, the following decoder is able to be fine-tuned utilizing channel mixing or channel independence for multivariate or univariate target data, respectively. Again, for more information on the exact functioning of both, please refer to the original paper [].
 
 
-Granite TTMs are available in two main revisions, named as r1 and r2. While architectully identical, TTM r2 models have been pre-trained on larger datasets (~700M samples) than r1 models ( ~250M); IBM reports that with a larger training set, performances have increased by over 15% on average, although they still advise to experiment with both r1 and r2 models to pick the best-suited for the intended application.
+Granite TTMs are available in two main revisions, named as r1 and r2. While architectully identical, TTM r2 models have been pre-trained on larger datasets (~700M samples) than r1 models ( ~250M); IBM reports that with a larger training set, performances have increased by over 15% on average, although they still advise to experiment with both r1 and r2 models to pick the best-suited for the intended application. Additionally, both r1 and r2 models come in different sizes of context and prediction length: on the HuggingFace repo, each model can be found on seperate branches with the naming convention _cl-pl-rn_, where _cl_ is the context length, _pl_ the prediction length and _rn_ is either r1 or r2.  
+Additionally, other models are released
 
 Granite TinyTimeMixers provide a valid solution for time-series forecasting in smart farming, and the vast documentation provided by IBM would greatly simplify and speed up the process of introducing these models in a live application.
 
 ### 2.1.2 Granite TSPulse
-Also part of the IBM Granite suite are the TSPulse models, ultra-compact pre-trained models developed for tasks such as classification, anomaly detection (AD), imputation, and similarity search in multivariate time-series. Their main strength comes from their very limited size, totaling at 1 milion parameters, compared to other multivariate time-series analysis models such as Google's TimesFM (200M parameters) [], Amazon's Chronos models (20M for the smallest) [] and even Lag-LLaMA (2.49M) [], allowing these models to perform GPU-free inference.
+Also part of the IBM Granite suite are the TSPulse models, ultra-compact pre-trained models developed for tasks such as classification, anomaly detection, imputation, and similarity search in multivariate time-series. Their main strength comes from their very limited size, totaling at 1 milion parameters, compared to other multivariate time-series analysis models such as Google's TimesFM (200M parameters) [], Amazon's Chronos models (20M for the smallest) [] and even Lag-LLaMA (2.49M) [], allowing these models to perform GPU-free inference.
 
 [TODO overview dell'architettura]  
 At the task level, TSPulse integrates several innovations:

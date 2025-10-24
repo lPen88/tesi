@@ -1,24 +1,22 @@
 
 ## Table of Contents
 
-1. [Introduction](#introduction)  
- 1.1 [Research Methodology](#research-methodology)  
-2. [Relevant Models](#relevant-models)  
- 2.1 [IBM Granite - General Overview](#ibm-granite---general-overview)  
-  2.1.1 [Granite TinyTimeMixers](#granite-tinytimemixers)  
-  2.1.2 [Granite TSPulse](#granite-tspulse)  
-  2.1.3 [Grasnite PatchTST](#grasnite-patchtst)  
-  2.1.4 [Granite PatchTSMixer](#granite-patchtsmixer)  
-  2.1.5 [Granite FlowState](#granite-flowstate)  
-  2.1.6 [Granite Geospatial Biomass](#granite-geospatial-biomass)  
- 2.2 [Smart Farming Disease Detection Transformer](#smart-farming-disease-detection-transformer)  
- 2.3 [PlantCaduceus](#plantcaduceus)  
- 2.4 [Fruits and Vegetables Detector](#fruits-and-vegetables-detector)  
- 2.5 [Plant leaf Detection and Classification](#plant-leaf-detection-and-classification)  
- 2.6 [Plant Disease Detection Project](#plant-disease-detection-project)  
- 2.7 [Plant Leaf Diseases Detection](#plant-leaf-diseases-detection)  
- 2.8 [Fine-Grained Visual Classification on Plant Leaf Diseases](#fine-grained-visual-classification-on-plant-leaf-diseases)  
- 2.9 [Timeseries Anomaly Detection](#timeseries-anomaly-detection)  
+1. [Introduction](#1-introduction)  
+ 1.1 [Research Methodology](#11-research-methodology)  
+2. [Relevant Models](#2-relevant-models)  
+ 2.1 [IBM Granite - General Overview](#21-ibm-granite---general-overview)  
+  2.1.1 [Granite TinyTimeMixers](#211-granite-tinytimemixers)  
+  2.1.2 [Granite TSPulse](#212-granite-tspulse)  
+  2.1.3 [Grasnite PatchTST](#213-grasnite-patchtst)  
+  2.1.4 [Granite PatchTSMixer](#214-granite-patchtsmixer)  
+  2.1.5 [Granite FlowState](#215-granite-flowstate)  
+  2.1.6 [Granite Geospatial Biomass](#216-granite-geospatial-biomass)  
+ 2.2 [Smart Farming Disease Detection Transformer](#22-smart-farming-disease-detection-transformer)  
+ 2.3 [Fruits and Vegetables Detector](#23-fruits-and-vegetables-detector)  
+ 2.4 [Plant leaf Detection and Classification](#24-plant-leaf-detection-and-classification)   
+ 2.5 [Plant Leaf Diseases Detection](#25-plant-leaf-diseases-detection)  
+ 2.6 [Fine-Grained Visual Classification on Plant Leaf Diseases](#26-fine-grained-visual-classification-on-plant-leaf-diseases)  
+ 2.7 [Timeseries Anomaly Detection](#27-timeseries-anomaly-detection)  
 3. [Non-relevant Models](#non-relevant-models)  
  3.1 [OpenMed NER](#openmed-ner)  
  3.2 [PlanTL models](#plantl-models)  
@@ -84,19 +82,18 @@ While the backbone will still perform channel-independent computing, the followi
 
 Granite TTMs are available in two main revisions, named as r1 and r2. While architectully identical, TTM r2 models have been pre-trained on larger datasets (~700M samples) than r1 models ( ~250M); IBM reports that with a larger training set, performances have increased by over 15% on average, although they still advise to experiment with both r1 and r2 models to pick the best-suited for the intended application. Additionally, both r1 and r2 models come in different sizes of context and prediction length: on the HuggingFace repo, each model can be found on seperate branches with the naming convention _cl-pl-rn_, where _cl_ is the context length, _pl_ the prediction length and _rn_ is either r1 or r2.
 
-Granite TinyTimeMixers provide a valid solution for time-series forecasting in smart farming, and the vast documentation and guides provided by IBM would greatly simplify and speed up the process of introducing these models in a live application.
+While general-purpose, Granite TinyTimeMixers provide a valid solution for time-series forecasting in smart farming, and the vast documentation and guides provided by IBM would greatly simplify and speed up the process of introducing these models in a live application.
 
 ### 2.1.2 Granite TSPulse
 Also part of the IBM Granite suite are the TSPulse models, ultra-compact pre-trained models developed for tasks such as classification, anomaly detection, imputation, and similarity search in multivariate time-series. Their main strength comes from their very limited size, totaling at 1 milion parameters, compared to other multivariate time-series analysis models such as Google's TimesFM (200M parameters) [], Amazon's Chronos models (20M for the smallest) [] and even Lag-LLaMA (2.49M) [], allowing these models to perform GPU-free inference.
 
-[TODO overview dell'architettura]  
-At the task level, TSPulse integrates several innovations:
+Like TTMs, TSPulse is also built on top of the TSMixer architecture, while also introducing several enhancements.
+* **Dual-space masked reconstruction strategy**: masked inputs are simultaneously reconstructed in both time and frequency (FFT) domains, leveraging the intuition that certain patterns are easier to detect in the time domain  while others are more salient in the frequency domain. By learning to mix, attend and reconstruct across both spaces, TSPulse builds richer and robust representations.
+* **dual-embedding disentanglement**: TSPulse generates two types of embeddings during pre-training, that is detailed embeddings for fine-grained analysis, and high-level semantic embeddings for broader task understanding. By capturing both levels of information during pre-training, TSPulse enables faster and more robust generalization across tasks.
+* **hybrid masking pre-train strategy**: by combining point-wise and
+block-wise masking with varying ratios per sample. This enables the model to reconstruct irregular masking structures, mimicking realistic scenarios.
 
-* TSLens: A fine-tuning module for task-aware feature extraction.
-* Multi-head triangulation: Fuses outputs from multiple prediction streamsto enhance anomaly detection robustness.
-* Hybrid masking: Reduces bias during pre-training, improving zero-shotimputation.  
-
-^rubato dal loro readme
+[MORE SHIT]
 
 Three variants of TSPulse exist, each specialised in a different task:
 * tspulse-hybrid-allhead-512-p8-r1, recommended for anomaly detection
@@ -107,7 +104,7 @@ The terms "hybrid" and "block" represent the type of masking used during pre-tra
 
 In conclusion, thanks to their compact architecture and strong benchmark performance, TSPulse models represent a valid choice for anomaly detection tasks in smart farming. Their small parameter count enables efficient, resource-light deployment, while mantaining a high degree of efficency compared to state-of-the-art models.
 
-## 2.1.3 Grasnite PatchTST
+### 2.1.3 Grasnite PatchTST
 Like TTMs, PatchTST [] is a transformer-based model for tasks related to multivariate time-series, such as forecasting, regression and classification.  
 PatchTST introduces two key concepts:
 * Patching, which consists in aggregating several time steps into subseries-level short contiguous segments called patching.
@@ -245,10 +242,7 @@ The author reports that the model may not generalise to unseen crops; as such, f
 
 [conclusion TODO]
 
-## 2.3 PlantCaduceus
-DNA modeling of plants
-
-## 2.4 Fruits and Vegetables Detector 36
+## 2.3 Fruits and Vegetables Detector 36
 
 This model [] is a fine-tuned version of ResNet-50 [], a deep neural network developed by Microsoft for the purpose of image classification; 50 represents the depth of the network.
 
@@ -259,7 +253,7 @@ the model was trained on a dataset containing 3825 images of 36 different fruits
 
 \[conclusion\] something something model may be shit but we may as well fine-tune ResNet for our purposes.
 
-## 2.5 Plant leaf Detection and Classification
+## 2.4 Plant leaf Detection and Classification
 
 This model [] has been trained using YOLOv8 to detect and classify plant leaves: YOLOv8 [] is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification of images and real-time video feeds.  
 
@@ -269,7 +263,7 @@ The model was trained by FOODU, an Indian company specialised in Web Designing. 
 
 \[conclusion\] something something the model page is smelly, wouldn't trust it
 
-## 2.7 Plant Leaf Diseases Detection
+## 2.5 Plant Leaf Diseases Detection
 
 https://huggingface.co/YuchengShi/LLaVA-v1.5-7B-Plant-Leaf-Diseases-Detection
 
@@ -277,14 +271,14 @@ This model was trained for the purpose of evaluating the SelfSynthX framework []
 
 Below is an overview of the framework's architecture:
 ![img](./img/selfsynth.png)
-Given an image, $X$ represents it's true contents and $c$ it's class label, each $c$ is associated with a set of visual concepts $Z$, which can either be defined by domain experts or by an LLM; the base LMM we wish to fine-tune (LLaVa in the paper) will now be prompted to describe the image, generating a set of descriptions $D$; the model is then tuned to maximise the mutual information between $X, D$ and $Z$, and to select a set of $Z^* \subseteq Z$ which maximises the relevance of $D$ to $X$ **[i think lmao]**. Once $Z^* $ is obtained, it's possible to generate an explainable answer for a classification on each image by prompting the base LMM, such as "What is this bird's species? Explain your reasoning."; the pairs image and query-answer are later used to fine-tune the LMM. The question reported above was asked to the evaluation model trained on a dataset of birds  
-After the above steps, the tuned model goes through the Rejection Sampling process: for each image and query, several candidate answers are generated, each is scored by how well it aligns with the image-specific $Z^* $; the highest scoring candidate is accepted for successive fine-tuning only if it also correctly predicts the image's class label.
+Given an image, $X$ represents it's true contents and $c$ it's class label, each $c$ is associated with a set of visual concepts $Z$, which can either be defined by domain experts or by an LLM; the base LMM we wish to fine-tune (LLaVa in the paper) will now be prompted to describe the image, generating a set of descriptions $D$; the model is then tuned to maximise the mutual information between $X, D$ and $Z$, and to select a set of $Z^* \subseteq Z$ which maximises the relevance of $D$ to $X$. Once $Z^* $ is found, it's possible to generate an explainable answer for a classification on each image by prompting the base LMM, such as "What is this bird's species? Explain your reasoning."; the pairs image and query-answer are later used to fine-tune the LMM. The question reported above was asked to the evaluation model trained on a dataset of birds  
+After the above steps, the tuned model goes through the Rejection Sampling process: for each image and query, several candidate answers are generated, scoring each by how well it aligns with the image-specific $Z^* $; the highest scoring candidate is accepted for successive fine-tuning only if it also correctly predicts the image's class label.
 
 As we stated earlier, the model [] was trained to evaluate SelfSynthX: as such, it is a fine-tuned version of LLaVa trained on the Plant Diseases Dataset [https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset]; other than this model, others were trained on different datasets to evaluate the framework on different domains.
 
-## 2.8  Fine-Grained Visual Classification on Plant Leaf Diseases
+## 2.6  Fine-Grained Visual Classification on Plant Leaf Diseases
 
-## 2.9 Timeseries Anomaly Detection
+## 2.7 Timeseries Anomaly Detection
 
 # 3. Non-relevant Models
 

@@ -12,11 +12,11 @@
   2.1.5 [Granite FlowState](#215-granite-flowstate)  
   2.1.6 [Granite Geospatial Biomass](#216-granite-geospatial-biomass)  
  2.2 [Smart Farming Disease Detection Transformer](#22-smart-farming-disease-detection-transformer)  
- 2.3 [Fruits and Vegetables Detector](#23-fruits-and-vegetables-detector)  
+ 2.3 [Fruits and Vegetables Detector 36](#23-fruits-and-vegetables-detector-36)  
  2.4 [Plant leaf Detection and Classification](#24-plant-leaf-detection-and-classification)   
- 2.5 [Plant Leaf Diseases Detection](#25-plant-leaf-diseases-detection)  
- 2.6 [Fine-Grained Visual Classification on Plant Leaf Diseases](#26-fine-grained-visual-classification-on-plant-leaf-diseases)  
- 2.7 [Timeseries Anomaly Detection](#27-timeseries-anomaly-detection)  
+ 2.5 [Plant Leaf Diseases Detection](#25-plant-leaf-diseases-detection)   
+ 2.6 [Keras Timeseries Anomaly Detection](#26-keras-timeseries-anomaly-detection)   
+ 2.7 [AdaptLLM Remote Sensing](#27-adaptllm-remote-sensing)
 3. [Non-relevant Models](#non-relevant-models)  
  3.1 [OpenMed NER](#openmed-ner)  
  3.2 [PlanTL models](#plantl-models)  
@@ -32,24 +32,24 @@ We have been tasked with identifying the best practises for creating a ML model 
 
 ## 1.1 Research Methodology
 
-TODO
+Dr. Federica Pepe, in an on-going work related to FARM-TECH, compiled a list of pre-trained models for a reasarch on bias developed in AI models. The models were collected from HuggingFace if they contained, either in the repo name or readme, any of the terms listed below. Any models with less than 100 downloads were discarded.
 
-Dr. Federica Pepe (?) compiled a list of pre-trained model following certain requirements [poi li listo] for the purpose of [TODO].
-Additionally, in order to be considered in the scope of this thesis, each model:
+[lista dei termini tipo in una tabella boh]
+
+Building upon this list, they will be considered in this work only if they follow these following requirements:
 1. must be properly documented, and
 2. must be relevant to the field of application. 
 
 A [Google Spreadsheet](https://docs.google.com/spreadsheets/d/17MHOh_VFrFM3qAwXw3VAOcdX4I0mnw9C517qEQdEdTg/edit?usp=sharing) has been compiled to keep track of all the models cited in this work.  
-The models that satisfy both requirements, labeled as "accepted", will be analysed in-depth in chapter two; models that satisfy only requirement 2, labeled as "discarded (not relevant)", will receive a brief overview, alongside their reason for exclusion, in chapter three; models that do not satisfy the first requirement will not be considered for this thesis (analysis/research?).
+The models that satisfy both requirements, labeled as "accepted", will be analysed in-depth in chapter two; models that satisfy only requirement 2, labeled as "discarded (not relevant)", will receive a brief overview, alongside their reason for exclusion, in chapter three; models that do not satisfy the first requirement will not be considered for this work.
 
 # 2. Relevant Models
 
-This chapter will analyse all the models deemed relevant to the FARM-TECH project. Most of these models are general-purpose, time-series forecasting models which, while not trained specifically on relevant data, can be re-trained to better fit the intended purposes.
-Out of 100 models originally retrieved, 16 of them are considered as relevant for [this work?]; of these, 7 are part of the IBM Granite suite.
+This chapter will analyse all the models deemed relevant to the FARM-TECH project. Out of 100 models originally retrieved, 14 have been deemed as relevant: 6 of these models are general-purpose, time-series forecasting models which, while not trained specifically on relevant data, can be re-trained or fine-tuned to better fit the intended purposes. All of the genera-purpose models are part of the IBM Granite suite, while the remaining 9 models were trained to perform image analysis.
 
 ## 2.1 IBM Granite - General Overview
 
-IBM Granite is a family of enterprise-grade AI foundation models developed by IBM, designed to deliver high performance, safety, and efficiency across a wide range of business tasks. These multimodal models support language, vision, speech, and time-series forecasting. Within the Granite suite, these last time-series forecasting models can be of particular importance to FARM-TECH, for example in estimating weather pattern and crop yield [idk].
+IBM Granite is a family of enterprise-grade AI foundation models developed by IBM, designed to deliver high performance, safety, and efficiency across a wide range of business tasks. These multimodal models support language, vision, speech, and time-series forecasting. Within the Granite suite, these last time-series forecasting models can be of particular importance to FARM-TECH, for example in estimating weather pattern, crop yield and anomaly detection, which may be useful in detecting malfunctioning sensors.
 
 ### 2.1.1 Granite TinyTimeMixers
 Granite TinyTimeMixers (TTM) are lightweight, efficient time-series forecasting models within the IBM Granite suite. They are designed to handle large-scale, multivariate time-series data, making them suitable for applications such as sensor data analysis and predictive maintenance in smart farming.
@@ -88,10 +88,10 @@ While general-purpose, Granite TinyTimeMixers provide a valid solution for time-
 Also part of the IBM Granite suite are the TSPulse models, ultra-compact pre-trained models developed for tasks such as classification, anomaly detection, imputation, and similarity search in multivariate time-series. Their main strength comes from their very limited size, totaling at 1 milion parameters, compared to other multivariate time-series analysis models such as Google's TimesFM (200M parameters) [], Amazon's Chronos models (20M for the smallest) [] and even Lag-LLaMA (2.49M) [], allowing these models to perform GPU-free inference.
 
 Like TTMs, TSPulse is also built on top of the TSMixer architecture, while also introducing several enhancements.
-* **Dual-space masked reconstruction strategy**: masked inputs are simultaneously reconstructed in both time and frequency (FFT) domains, leveraging the intuition that certain patterns are easier to detect in the time domain  while others are more salient in the frequency domain. By learning to mix, attend and reconstruct across both spaces, TSPulse builds richer and robust representations.
+* **Dual-space masked reconstruction strategy**: masked inputs are simultaneously reconstructed in both time and frequency domains, leveraging the intuition that certain patterns are easier to detect in the time domain  while others are more salient in the frequency domain. By learning to mix, attend and reconstruct across both spaces, TSPulse builds richer and robust representations.
 * **dual-embedding disentanglement**: TSPulse generates two types of embeddings during pre-training, that is detailed embeddings for fine-grained analysis, and high-level semantic embeddings for broader task understanding. By capturing both levels of information during pre-training, TSPulse enables faster and more robust generalization across tasks.
 * **hybrid masking pre-train strategy**: by combining point-wise and
-block-wise masking with varying ratios per sample. This enables the model to reconstruct irregular masking structures, mimicking realistic scenarios.
+block-wise masking with varying ratios per sample, the model is able to reconstruct irregular masking structures, mimicking realistic scenarios.
 
 [MORE SHIT]
 
@@ -106,9 +106,9 @@ In conclusion, thanks to their compact architecture and strong benchmark perform
 
 ### 2.1.3 Grasnite PatchTST
 Like TTMs, PatchTST [] is a transformer-based model for tasks related to multivariate time-series, such as forecasting, regression and classification.  
-PatchTST introduces two key concepts:
-* Patching, which consists in aggregating several time steps into subseries-level short contiguous segments called patching.
-* Channel-independence: a multivariate time series is a multi-channel signal, which can be aggregated into a single data point to serve as input token for the Transformer; channel-independence, instead, means that each input token contains information from a single channel.
+PatchTST makes use of two tecniques:
+* **Patching**, like the previous models, consists in aggregating several time steps into subseries-level short contiguous segments called patches.
+* **Channel-independence**: a multivariate time series is a multi-channel signal, which can be aggregated into a single data point to serve as input token for the Transformer; channel-independence, instead, means that each input token contains information from a single channel.
 
 The purpose of these two ideas are mainly three: (i) a reduction on time and space complexity, since patching will reduce the amount of input tokens fed to the Transformer, this will be seen more in detail later; (ii) increased locality and capture of comprehensive semantic information that would be missed in point-level evaluation, and (iii) the separate per-channel attention would increase adaptability across heterogeneous series, reducing overfitting while still allowing cross-series weight sharing for transferability.
 
@@ -125,7 +125,7 @@ This is significant, as through the patching process we reduce the amount of inp
 
 The model, trained on a dataset containing several parameters sampled from an electrical transformer every hour over the span of two years, achieved a training loss of 0.3 and validation loss of 0.81, while a mean square error of 0.39 on the evaluation dataset. Training hyperparameters can be found on the model's page.
 
-While the model has been trained on non-relevant data, IBM offers a demo for training a model on a custom dataset.
+While the model has been trained on non-relevant data, IBM has provided a guided demo to train a model on a custom dataset.
 
 \[conclusion TODO\]
 
@@ -276,9 +276,17 @@ After the above steps, the tuned model goes through the Rejection Sampling proce
 
 As we stated earlier, the model [] was trained to evaluate SelfSynthX: as such, it is a fine-tuned version of LLaVa trained on the Plant Diseases Dataset [https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset]; other than this model, others were trained on different datasets to evaluate the framework on different domains.
 
-## 2.6  Fine-Grained Visual Classification on Plant Leaf Diseases
+## 2.6 Keras Timeseries Anomaly Detection
 
-## 2.7 Timeseries Anomaly Detection
+This model was trained as part of a tutorial for the Keras library. idk it feels like shit
+
+## 2.7 AdaptLLM Remote Sensing
+
+This is supposed to describe what is present in a drone image with an LLM handling the text generation. Two versions are present, one uses Llama and the other Qwen
+
+## 2.8 CropSeek LLM
+
+This model was trained to answer question related to agriculture, such as a certain crop's optimal planting season, ideal conditions for growth etc... It's based on DeepSeek R1, fine-tuned on this dataset: DARJYO/sawotiQ29_crop_optimization dataset, finetuned using LoRa.
 
 # 3. Non-relevant Models
 
@@ -300,7 +308,6 @@ Plan de Tecnologías del Lenguaje (PlanTL) is a government-owned Spanish company
 * roberta-base-es-wikicat-es, is a model trained with the purpose of classifying documents written in Spanish.
 
 All of these model has been deemed not relevant since their intended purposes are outside of FARM-TECH's scope.
-
 
 ## 3.3 Others
 

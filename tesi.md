@@ -194,15 +194,16 @@ At the time of writing, the model published on Hugging Face has been trained on 
 [conclusion TODO]
 
 ### 2.1.6 Granite Geospatial Biomass
-Granite Geospatial Biomass (GGB from now on) [] has been developed for the purpose of predicting the total amount of aboveground biomass utilising satellite imagery.
+Granite Geospatial Biomass (GGB) [] has been developed for the purpose of predicting the total amount of aboveground biomass utilising satellite imagery.
 The model has been trained using Terratorch [], a toolkit intended for simplyfing fine-tuning, evaluation and deployment of Geospatial Foundation models; TerraTorch's architecture will not be discussed in this work, please refer to their paper for more information.
 
-GGB was fine-tuned from a model similar to the one described in [], which will not be discussed in detail in this work; GGB switches the Vision Transformer (ViT) for the Swin-B Transformer backbone as an encoder, as it enables the model to process at higher effective resolution while also improving computational efficiency thanks to the use of windowed self-attention [].  
+GGB was fine-tuned from a model similar to Prithvi [https://arxiv.org/pdf/2310.18660], a model created to test the proposed training framework for Geospatial Foundation models, which will not be discussed in detail in this work; GGB switches the proposed Vision Transformer (ViT) for the Swin-B Transformer backbone [https://arxiv.org/abs/2103.14030] as an encoder, as it enables the model to process at higher effective resolutions while also improving computational efficiency thanks to the use of windowed self-attention. Swin-B will also not be discussed in this work, as such please consult the original paper for more information [https://arxiv.org/abs/2103.14030]; more information regarding the fine-tuning process performed by IBM can be found here [https://arxiv.org/abs/2406.19888].
 
-Pretraining was performed using SimSIM [], a self-supervised learning strategy based on masking a part of the input data which will then be reconstructed by the model.  
-Two datasets were used for the training process, Harmonized Landsat-Sentinel 2 (HLS) and Global Ecosystem Dynamics Investigation (GEDI), both provided by NASA. Both training and testing require a cloud-free snapshot of an area: [idk what to write lol]
 
-[conclusion TODO]
+Pretraining was performed using SimMIM [https://arxiv.org/abs/2111.09886], a self-supervised learning strategy based on masking a part of the input data which will then be reconstructed by the model.  
+Two datasets were used for the training process, Harmonized Landsat-Sentinel 2 (HLS) and Global Ecosystem Dynamics Investigation (GEDI), both provided by NASA. Both training and testing require a cloud-free snapshot of an area: starting from HLS data gathered during the leaf-on season for each hemisphere, pixels not contaminated with clouds were selected; the mean value of each cloud-free pixel is computed during the leaf-on season for each spectral band, which is then assembled into a composite image representative for that area; the corresponding GEDI data obtained during the same leaf-on season are interpolated to the HLS grid (CRS:4326) such that the measured biomass points are aligned with HLS data.
+
+GGB can be very useful in relation to FARM-TECH, first and foremost in enabling continuous monitoring of fields and yield estimation; while originally trained on data retrieved from forests, IBM has provided a notebook on how to perform few-shot forecasting on an unseen biome: perhaps by performing few-shot fine-tuning on crop imagery the model could generalise fairly well, although testing is needed.
 
 
 ## 2.2 Smart Farming Disease Detection Transformer
@@ -259,9 +260,9 @@ the model was trained on a dataset containing 3825 images of 36 different fruits
 
 This model [] has been trained using YOLOv8 to detect and classify plant leaves: YOLOv8 [] is a computer vision model architecture developed by Ultralytics, which allows to train models at performing detection and classification of images and real-time video feeds.  
 
-While Ultralytics has provided no proper documentation on YOLO architecture nor inner workings, it has uploaded a vast amount of tutorials and guided examples on how to train a model with it, which would speed up the process of building a system ourselves. This paper [] describes YOLOv8's architecture, although it is unclear if was written by an affiliate of Ultranalytics, or at least in cooperation with them.
+While Ultralytics has provided no proper documentation on YOLO's internal architecture nor inner workings, it has uploaded a vast amount of tutorials and guided examples on how to train a model with it, which would speed up the process of building a system ourselves if needed. This paper [] describes YOLOv8's architecture, although it is unclear if was written by an affiliate of Ultranalytics, or at least in cooperation with them.
 
-The model was trained by FOODU, an Indian company specialised in Web Designing. On the model's page, not much information about the training process is shared: the dataset utilised was not shared, it is stated that it's composed by "hundreds of images of 46 different plants, including both disease-infected and healthy leaves"; training was ran for 50 epochs, and, worringly, the terms "testing" nor "vealuation" never appeared on the page, but it is claimed that "The model has achieved a precision (mAP@0.5) of 0.946 on the object detection task".
+The model was trained by FOODU, an Indian company specialised in Web Designing. On the model's HuggingFace page, not much information about the training process is shared: the dataset utilised was not shared, but it is stated that it's composed by "hundreds of images of 46 different plants, including both disease-infected and healthy leaves"; training was ran for 50 epochs, and, worringly, the terms "testing" nor "vealuation" have appeared on the page, but it is claimed that "The model has achieved a precision (mAP@0.5) of 0.946 on the object detection task".
 
 \[conclusion\] something something the model page is smelly, wouldn't trust it
 
@@ -321,6 +322,17 @@ Plan de Tecnologías del Lenguaje (PlanTL) is a government-owned Spanish company
 
 All of these model has been deemed not relevant since their intended purposes are outside of FARM-TECH's scope.
 
+## 3.3 Plant Genome Analysis
+
+5 retrieved models were trained to perform modeling of genomic sequences of plants, below they are listed:
+* kuleshov-group/PlantCaduceus_l32
+* kuleshov-group/PlantCaduceus_l20
+* zhangtaolab/plant-dnamamba-singlebase
+* zhangtaolab/plant-dnabert-BPE
+* yangheng/PlantRNA-FM
+
+All of these models were retrieved due to the presence of the term "Plant" in their name; being out of scope for farm-tech, they were discarded.
+
 ## 3.3 Others
 
 All the remaining models have been discarded for providing little to no documentation:
@@ -330,8 +342,6 @@ All the remaining models have been discarded for providing little to no document
 * Diginsa/Plant-Disease-Detection-Project
 * hyrinmansoor/text2frappe-s2-flan-field
 * KevinCha/dinov2-vit-large-remote-sensing
-* kuleshov-group/PlantCAD2-Large-l48-d1536
-* kuleshov-group/PlantCAD2-Small-l24-d0768
 * TomatoMTL/bert-mini-finetuned-ner-chinese-onnx
 * votepurchase/plantMilkModelSuite_walnut
 * misri/plantMilkModelSuite_walnut

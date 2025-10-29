@@ -70,7 +70,7 @@ TTM operates in two stages, pre-training and fine-tuning: as you can see from th
 
 While the backbone will not be seen in detail in this work, you can see the three seperate layers that each make use of a TSMixer block, with the AP interfacing each layer with the next. At the start of the backbone there is the RPT, which explicitly learns and incorporates a new patch embedding as a learnable prefix into the input data based on the input resolution. For more information on the backbone's structure, please refer to the original paper []. 
 
-In the pretrain workflow, the backbone utilise the processed data to perform the multi-resolution training on a single channel of the timeseries; the output of the backbone will then be used by the decoder and forecast head to produce the forecast. The functioning of the Decoder and Forecast head will not be discussed in this work, please refer to the original paper for more information [].  
+In the pretrain workflow, the backbone utilises the processed data to perform multi-resolution training on a single channel of the timeseries; the backbone's output will then be used by the decoder and forecast head to produce the forecast. The functioning of the Decoder and Forecast head will not be discussed in this work, please refer to the original paper for more information [].  
 
 In the fine-tuning workflow, the pre-trained model will be working with data from the target domain, which has no overlap with the pre-training datasets. Forecasting can be performed in three ways:
 * zero-shot: the pre-trained model is directly used to perform forecasting;
